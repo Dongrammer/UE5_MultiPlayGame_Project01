@@ -1,0 +1,6 @@
+// Create InputAction
+1. Add InputAction InputDataAsset
+2. Create ActionFunction in Hero.cpp
+3. BindAction In F[MappingInputAsset] of Hero.cpp
+4. Create InputAction in Engine
+5. Connect InputAction to InputDataAsset anc IMC

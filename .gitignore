@@ -1,0 +1,9 @@
+.vs/
+Binaries/
+DerivedDataCache/
+Intermediate/
+Saved/
+*.fbx
+*.obj
+*.mtl
+*.uasset

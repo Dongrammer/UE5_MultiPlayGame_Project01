@@ -1,0 +1,108 @@
+2025/08/24
+ABP_Hero 생성. 
+2025/08/25
+스테이지 필드 생성. 머티리얼이 흐르도록 설정.
+AttackSpeed 생성. 공격 속도와 연결
+WorldManager 생성. 
+2025/08/26
+GameState 생성. 
+WorldManager 생성 확인.
+2025/08/29
+Hero - MainHUD 생성.
+BaseCharacter - GameState 연동
+Hero - WorldManager 연동
+Hero / MainHUD - WorldRunningTime 생성. 서버, 클라이언트 연동.
+GameState - GamePhase 생성. 서버, 클라이언트 연동
+2025/08/31
+BaseCharacter - bShouldMove 동기화.
+Hero - RunningTime 동기화.
+2025/09/01
+DT_StageEnemyStatusTable 생성
+스테이지의 몬스터 스폰 정보를 담은 구조체 전달
+GameMode에서 StageID를 입력하여 StartStage() 함수를 실행하도록 변경
+EnemyCatalogDataAsset 생성. 몬스터의 구성
+Spawn Enemy 구현 - 스폰 박스의 랜덤한 위치에서 스폰
+2025/09/02
+Enemy - Chase to Player 구현 멀티플레이 시 더 가까운 플레이어 추적
+2025/09/03
+AttackComponent 생성. 공격 관련 이전.
+SelecTarget - ABaseCharacter로 이전.
+Hero - 적 캐릭터 추적. 타겟 캐릭터를 향해 각도 변경
+2025/09/07
+메인 메뉴 생성. 게임 시작시 메인 메뉴 레벨 플레이
+뒤로 도는 행동 구현, 및 서버 동기화
+AttackComponent - BaseCharacter로 이전
+AttackComponent - Attack Target서버 권위 동기화 
+2025/09/08
+MPC 적용
+WorldSpeed 동기화. 속도 바꾸면 자동으로 MPC, 캐릭터 등에게 적용.
+블루프린트에서 작동 확인.
+적 캐릭터 생성(Slime, Mushroom)
+2025/09/09
+ItemData 생성.
+EquipComponent 생성.
+CurrentWeapon, AttackComponent와 동기화.
+AS_Dart, AS_Sword 생성 Hero_AnimDataAsset으로 관리
+2025/09/10
+타겟 공격 모션 동기화 설정.
+FireProjectile, EndAttack 노티파이 생성. EndAttack노티파이에서 다음 공격 타이머 설정.
+ItemData에서 아이템 종류별 에셋을 담은 구조체 생성. 각각의 데이터 에셋으로 배열로 지정하고 AllItemDataAsset에서 접근.
+BaseProjectile 생성.
+2025/9/12
+아이템의 에셋을 데이터에셋을 사용하지 않기록 결정. 모두 데이터 테이블로 관리.
+ItemSubsystem 생성. 아이템 통합 관리
+PlayerState생성. 플레이어가 스테이지를 시작할 준비가 되었는지 확인
+게임 페이즈에 Loading을 추가하여 캐릭터와 컴포넌트가 준비되었을 때 시작.
+플레이어 컨트롤러에서 HUD 관리
+로딩 이후 3초뒤 게임 시작, 로딩창, 게임시작HUD 구현
+임시로 인원수2명이 되어야 시작되도록 바꿈
+2025/09/14
+EquipComponent의 무기 교체 AttackComponent에 바인딩, 무기ID를 받아서 데이터 세팅. Hero에서 중계
+공격을 안하고 있을 때(버그 등) 안전 장치로. 몽타주 재생x 타이머x일 때 새로운 타겟이 생기면 공격하도록 설정.
+AttackComponent를 EnemyAttackComponent와 HeroAttackComponent로 분할.
+2025/09/15
+투사체 구현.
+BaseCharacter - TakeAttackDamage, Knockback 구현
+EnemyHealthBar 추가.
+
+void UAttackComponent::FireProjectileNotify() 만드는중.
+근데 LoadS해도 되나?
+
+
+1. ItemComponent나 DataAsset에서 아이템 캐싱을 해야하나
+public:
+    virtual void PostLoad() override
+    {
+        Super::PostLoad();
+        IndexCache.Empty();
+        for (int32 i=0; i<Items.Num(); i++)
+        {
+            IndexCache.Add(Items[i].ItemID, i);
+        }
+    }
+
+    const FWeaponData* Find(FName Id) const
+    {
+        if (const int32* Idx = IndexCache.Find(Id))
+        {
+            return &Items[*Idx];
+        }
+        return nullptr;
+    }
+
+
+
+★ 컴포넌트의 생성자에서 GetOwner를 사용하지말자.
+컴포넌트 생성 시점에서 Owner는 거의 null임
+★ FVector_NetQuantize
+일반 FVector는 정밀도가 높지만 밴드폭을 더 씀. NetQuantize는 내부적으로 압축/정수화 하여 전송(0.1cm, 1cm 단위 정밀도) 충분한 위치 정확도를 유지하면서 네트워크 패킷 크기를 줄이는 목적. 발사체 임팩트 위치 같은 건 +-1cm정도는 플레이어가 못느끼기 때문에 사용.
+★ TObjectPtr<> vs *
+TObjectPtr<>은 리플렉션/GC 안전성을 위한 스마트 포인터
+UObject파생 타입은 가급적이면 TObjectPtr<>을 사용하는게 권장
+하지만 지역 변수나 함수 인자처럼 잠깐 쓰는건 *가 더 가벼움
+클래스 멤버 + UPROPERTY 는 TObjectPtr<>사용.
+지역 변수, 함수 파라미터, 일시적 캐스팅은 포인터* 사용
+일관성을 유지하고 싶다면 TObjectPtr<>을 사용해도 나쁘지 않으나, 불필요하게 무거워질 수 있음.
+★ 네트워크 RPC로 Asset을 전달할 때.
+해당 객체가 클라에서도 존재하고 Path가 동일할 때만 복구된다.
+DataTable이나 SoftObjectPtr을 경유하지 않으면, 클라에서 그 에셋을 찾지 못하고 NULL을 반환한

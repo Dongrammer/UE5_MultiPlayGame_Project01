@@ -1,0 +1,32 @@
+# Visual Studio / IDE 임시 파일
+*.sln
+*.suo
+*.opensdf
+*.sdf
+*.ipch
+*.VC.db
+*.VC.opendb
+*.vscode/...
+*.idea/...
+.vs/...
+.vsconfig
+
+# 기타 IDE 캐시
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+# OS 자동 생성 파일
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# 개인 설정
+*.user
+*.userprefs
+
+# 로그 / 임시 / 백업
+*.log
+*.tmp
+*.bak
+*.swp
